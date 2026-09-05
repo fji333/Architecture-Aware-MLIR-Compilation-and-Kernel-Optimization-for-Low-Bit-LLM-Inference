@@ -1,0 +1,193 @@
+#include <iostream>                                                                                                                                                                                     
+#include <arm_neon.h>                                                                                                                                                                                   
+#include <vector>                                                                                                                                                                                       
+#include <chrono>                                                                                                                                                                                       
+#include <algorithm>                                                                                                                                                                                    
+                                                                                                                                                                                                        
+// ===================================================================                                                                                                                                  
+// Apple M4 W4A16 终极形态 GEMM 算子                                                                                                                                                                    
+// 包含: 8x16 寄存器瓦片 + Uk=2 软件流水线 + L2 宏观缓存分块 (Cache Tiling)                                                                                                                             
+// ===================================================================                                                                                                                                  
+                                                                                                                                                                                                        
+// 定义 L2 缓存分块大小 (适配 Apple Silicon 的庞大 L2 Cache)                                                                                                                                            
+#define MC 128                                                                                                                                                                                          
+#define NC 256                                                                                                                                                                                          
+                                                                                                                                                                                                        
+void gemm_m4_w4a16_tiled(const float16_t* A, const uint8_t* W, float16_t* C, int M, int N, int K) {                                                                                                     
+                                                                                                                                                                                                        
+    float16x8_t v_scale = vdupq_n_f16(0.1f);                                                                                                                                                            
+    float16x8_t v_bias  = vdupq_n_f16(-0.5f);                                                                                                                                                           
+                                                                                                                                                                                                        
+    // ----------------------------------------------------                                                                                                                                             
+    // 【外层护城河】：Cache Tiling (缓存分块)                                                                                                                                                          
+    // 把庞大的矩阵切成 128 x 256 的大块，保证不把 Cache 挤爆                                                                                                                                           
+    // ----------------------------------------------------                                                                                                                                             
+    for (int mc = 0; mc < M; mc += MC) {                                                                                                                                                                
+        for (int nc = 0; nc < N; nc += NC) {                                                                                                                                                            
+                                                                                                                                                                                                        
+            // ----------------------------------------------------                                                                                                                                     
+            // 【内层发动机】：Register Tiling (寄存器分块 8x16)                                                                                                                                        
+            // 在当前安全的 Cache 块里，启动极其暴力的微内核                                                                                                                                            
+            // ----------------------------------------------------                                                                                                                                     
+            for (int m = mc; m < std::min(mc + MC, M); m += 8) {                                                                                                                                        
+                for (int n = nc; n < std::min(nc + NC, N); n += 16) {                                                                                                                                   
+                                                                                                                                                                                                        
+                    const float16_t* ptr_act = A + (m * K);                                                                                                                                             
+                    const uint8_t* ptr_w = W + (n / 16) * (K * 8);                                                                                                                                      
+                                                                                                                                                                                                        
+                    // 1. 初始化 16 个累加器                                                                                                                                                            
+                    float16x8_t v_c0_low = vdupq_n_f16(0.0f); float16x8_t v_c0_high = vdupq_n_f16(0.0f);                                                                                                
+                    float16x8_t v_c1_low = vdupq_n_f16(0.0f); float16x8_t v_c1_high = vdupq_n_f16(0.0f);                                                                                                
+                    float16x8_t v_c2_low = vdupq_n_f16(0.0f); float16x8_t v_c2_high = vdupq_n_f16(0.0f);                                                                                                
+                    float16x8_t v_c3_low = vdupq_n_f16(0.0f); float16x8_t v_c3_high = vdupq_n_f16(0.0f);                                                                                                
+                    float16x8_t v_c4_low = vdupq_n_f16(0.0f); float16x8_t v_c4_high = vdupq_n_f16(0.0f);                                                                                                
+                    float16x8_t v_c5_low = vdupq_n_f16(0.0f); float16x8_t v_c5_high = vdupq_n_f16(0.0f);                                                                                                
+                    float16x8_t v_c6_low = vdupq_n_f16(0.0f); float16x8_t v_c6_high = vdupq_n_f16(0.0f);                                                                                                
+                    float16x8_t v_c7_low = vdupq_n_f16(0.0f); float16x8_t v_c7_high = vdupq_n_f16(0.0f);                                                                                                
+                                                                                                                                                                                                        
+                    // 2. 核心 K 循环 (Uk=2 拉链交错)                                                                                                                                                   
+                    for (int k = 0; k < K; k += 2) {                                                                                                                                                    
+                                                                                                                                                                                                        
+                        // 并发读取与解包                                                                                                                                                               
+                        uint8x8_t v_w_packed_0 = vld1_u8(ptr_w);                                                                                                                                        
+                        uint8x8_t v_w_packed_1 = vld1_u8(ptr_w + 8);                                                                                                                                    
+                        ptr_w += 16;                                                                                                                                                                    
+                                                                                                                                                                                                        
+                        uint8x16_t v_w_128_0 = vcombine_u8(v_w_packed_0, vdup_n_u8(0));                                                                                                                 
+                        uint8x16_t v_w_128_1 = vcombine_u8(v_w_packed_1, vdup_n_u8(0));                                                                                                                 
+                                                                                                                                                                                                        
+                        uint8x8_t v_low_int8_0  = vget_low_u8(vshrq_n_u8(vshlq_n_u8(v_w_128_0, 4), 4));                                                                                                 
+                        uint8x8_t v_high_int8_0 = vget_low_u8(vshrq_n_u8(v_w_128_0, 4));                                                                                                                
+                        uint8x8_t v_low_int8_1  = vget_low_u8(vshrq_n_u8(vshlq_n_u8(v_w_128_1, 4), 4));                                                                                                 
+                        uint8x8_t v_high_int8_1 = vget_low_u8(vshrq_n_u8(v_w_128_1, 4));                                                                                                                
+                                                                                                                                                                                                        
+                        float16x8_t v_w_fp16_low_0  = vfmaq_f16(v_bias, vcvtq_f16_u16(vmovl_u8(v_low_int8_0)),  v_scale);                                                                               
+                        float16x8_t v_w_fp16_high_0 = vfmaq_f16(v_bias, vcvtq_f16_u16(vmovl_u8(v_high_int8_0)), v_scale);                                                                               
+                        float16x8_t v_w_fp16_low_1  = vfmaq_f16(v_bias, vcvtq_f16_u16(vmovl_u8(v_low_int8_1)),  v_scale);                                                                               
+                        float16x8_t v_w_fp16_high_1 = vfmaq_f16(v_bias, vcvtq_f16_u16(vmovl_u8(v_high_int8_1)), v_scale);                                                                               
+                                                                                                                                                                                                        
+                        // Row 0                                                                                                                                                                        
+                        float16x8_t v_act0_0 = vld1q_dup_f16(ptr_act + 0);                                                                                                                              
+                        float16x8_t v_act0_1 = vld1q_dup_f16(ptr_act + 8);                                                                                                                              
+                        v_c0_low  = vfmaq_f16(v_c0_low, v_w_fp16_low_0,  v_act0_0);                                                                                                                     
+                        v_c0_low  = vfmaq_f16(v_c0_low, v_w_fp16_low_1,  v_act0_1);                                                                                                                     
+                        v_c0_high = vfmaq_f16(v_c0_high, v_w_fp16_high_0, v_act0_0);                                                                                                                    
+                        v_c0_high = vfmaq_f16(v_c0_high, v_w_fp16_high_1, v_act0_1);                                                                                                                    
+                                                                                                                                                                                                        
+                        // Row 1                                                                                                                                                                        
+                        float16x8_t v_act1_0 = vld1q_dup_f16(ptr_act + 1);                                                                                                                              
+                        float16x8_t v_act1_1 = vld1q_dup_f16(ptr_act + 9);                                                                                                                              
+                        v_c1_low  = vfmaq_f16(v_c1_low, v_w_fp16_low_0,  v_act1_0);                                                                                                                     
+                        v_c1_low  = vfmaq_f16(v_c1_low, v_w_fp16_low_1,  v_act1_1);                                                                                                                     
+                        v_c1_high = vfmaq_f16(v_c1_high, v_w_fp16_high_0, v_act1_0);                                                                                                                    
+                        v_c1_high = vfmaq_f16(v_c1_high, v_w_fp16_high_1, v_act1_1);                                                                                                                    
+                                                                                                                                                                                                        
+                        // Row 2                                                                                                                                                                        
+                        float16x8_t v_act2_0 = vld1q_dup_f16(ptr_act + 2);                                                                                                                              
+                        float16x8_t v_act2_1 = vld1q_dup_f16(ptr_act + 10);                                                                                                                             
+                        v_c2_low  = vfmaq_f16(v_c2_low, v_w_fp16_low_0,  v_act2_0);                                                                                                                     
+                        v_c2_low  = vfmaq_f16(v_c2_low, v_w_fp16_low_1,  v_act2_1);                                                                                                                     
+                        v_c2_high = vfmaq_f16(v_c2_high, v_w_fp16_high_0, v_act2_0);                                                                                                                    
+                        v_c2_high = vfmaq_f16(v_c2_high, v_w_fp16_high_1, v_act2_1);                                                                                                                    
+                                                                                                                                                                                                        
+                        // Row 3                                                                                                                                                                        
+                        float16x8_t v_act3_0 = vld1q_dup_f16(ptr_act + 3);                                                                                                                              
+                        float16x8_t v_act3_1 = vld1q_dup_f16(ptr_act + 11);                                                                                                                             
+                        v_c3_low  = vfmaq_f16(v_c3_low, v_w_fp16_low_0,  v_act3_0);                                                                                                                     
+                        v_c3_low  = vfmaq_f16(v_c3_low, v_w_fp16_low_1,  v_act3_1);                                                                                                                     
+                        v_c3_high = vfmaq_f16(v_c3_high, v_w_fp16_high_0, v_act3_0);                                                                                                                    
+                        v_c3_high = vfmaq_f16(v_c3_high, v_w_fp16_high_1, v_act3_1);                                                                                                                    
+                                                                                                                                                                                                        
+                        // Row 4                                                                                                                                                                        
+                        float16x8_t v_act4_0 = vld1q_dup_f16(ptr_act + 4);                                                                                                                              
+                        float16x8_t v_act4_1 = vld1q_dup_f16(ptr_act + 12);                                                                                                                             
+                        v_c4_low  = vfmaq_f16(v_c4_low, v_w_fp16_low_0,  v_act4_0);                                                                                                                     
+                        v_c4_low  = vfmaq_f16(v_c4_low, v_w_fp16_low_1,  v_act4_1);                                                                                                                     
+                        v_c4_high = vfmaq_f16(v_c4_high, v_w_fp16_high_0, v_act4_0);                                                                                                                    
+                        v_c4_high = vfmaq_f16(v_c4_high, v_w_fp16_high_1, v_act4_1);                                                                                                                    
+                                                                                                                                                                                                        
+                        // Row 5                                                                                                                                                                        
+                        float16x8_t v_act5_0 = vld1q_dup_f16(ptr_act + 5);                                                                                                                              
+                        float16x8_t v_act5_1 = vld1q_dup_f16(ptr_act + 13);                                                                                                                             
+                        v_c5_low  = vfmaq_f16(v_c5_low, v_w_fp16_low_0,  v_act5_0);                                                                                                                     
+                        v_c5_low  = vfmaq_f16(v_c5_low, v_w_fp16_low_1,  v_act5_1);                                                                                                                     
+                        v_c5_high = vfmaq_f16(v_c5_high, v_w_fp16_high_0, v_act5_0);                                                                                                                    
+                        v_c5_high = vfmaq_f16(v_c5_high, v_w_fp16_high_1, v_act5_1);                                                                                                                    
+                                                                                                                                                                                                        
+                        // Row 6                                                                                                                                                                        
+                        float16x8_t v_act6_0 = vld1q_dup_f16(ptr_act + 6);                                                                                                                              
+                        float16x8_t v_act6_1 = vld1q_dup_f16(ptr_act + 14);                                                                                                                             
+                        v_c6_low  = vfmaq_f16(v_c6_low, v_w_fp16_low_0,  v_act6_0);                                                                                                                     
+                        v_c6_low  = vfmaq_f16(v_c6_low, v_w_fp16_low_1,  v_act6_1);                                                                                                                     
+                        v_c6_high = vfmaq_f16(v_c6_high, v_w_fp16_high_0, v_act6_0);                                                                                                                    
+                        v_c6_high = vfmaq_f16(v_c6_high, v_w_fp16_high_1, v_act6_1);                                                                                                                    
+                                                                                                                                                                                                        
+                        // Row 7                                                                                                                                                                        
+                        float16x8_t v_act7_0 = vld1q_dup_f16(ptr_act + 7);                                                                                                                              
+                        float16x8_t v_act7_1 = vld1q_dup_f16(ptr_act + 15);                                                                                                                             
+                        v_c7_low  = vfmaq_f16(v_c7_low, v_w_fp16_low_0,  v_act7_0);                                                                                                                     
+                        v_c7_low  = vfmaq_f16(v_c7_low, v_w_fp16_low_1,  v_act7_1);                                                                                                                     
+                        v_c7_high = vfmaq_f16(v_c7_high, v_w_fp16_high_0, v_act7_0);                                                                                                                    
+                        v_c7_high = vfmaq_f16(v_c7_high, v_w_fp16_high_1, v_act7_1);                                                                                                                    
+                                                                                                                                                                                                        
+                        ptr_act += 16;                                                                                                                                                                  
+                    }                                                                                                                                                                                   
+                                                                                                                                                                                                        
+                    // 3. 将物理寄存器写回内存                                                                                                                                                          
+                    float16_t* ptr_out = C + (m * N) + n;                                                                                                                                               
+                    vst1q_f16(ptr_out + 0 * N, v_c0_low); vst1q_f16(ptr_out + 0 * N + 8, v_c0_high);                                                                                                    
+                    vst1q_f16(ptr_out + 1 * N, v_c1_low); vst1q_f16(ptr_out + 1 * N + 8, v_c1_high);                                                                                                    
+                    vst1q_f16(ptr_out + 2 * N, v_c2_low); vst1q_f16(ptr_out + 2 * N + 8, v_c2_high);                                                                                                    
+                    vst1q_f16(ptr_out + 3 * N, v_c3_low); vst1q_f16(ptr_out + 3 * N + 8, v_c3_high);                                                                                                    
+                    vst1q_f16(ptr_out + 4 * N, v_c4_low); vst1q_f16(ptr_out + 4 * N + 8, v_c4_high);                                                                                                    
+                    vst1q_f16(ptr_out + 5 * N, v_c5_low); vst1q_f16(ptr_out + 5 * N + 8, v_c5_high);                                                                                                    
+                    vst1q_f16(ptr_out + 6 * N, v_c6_low); vst1q_f16(ptr_out + 6 * N + 8, v_c6_high);                                                                                                    
+                    vst1q_f16(ptr_out + 7 * N, v_c7_low); vst1q_f16(ptr_out + 7 * N + 8, v_c7_high);                                                                                                    
+                                                                                                                                                                                                        
+                }                                                                                                                                                                                       
+            } // 内核循环结束                                                                                                                                                                           
+                                                                                                                                                                                                        
+        }                                                                                                                                                                                               
+    } // 缓存分块循环结束                                                                                                                                                                               
+}                                                                                                                                                                                                       
+                                                                                                                                                                                                        
+// ===================================================================                                                                                                                                  
+// 极限跑分测试脚手架 (Benchmark)                                                                                                                                                                       
+// ===================================================================                                                                                                                                  
+int main() {                                                                                                                                                                                            
+    // 真实的 LLM 层大小                                                                                                                                                                                
+    int M = 1024;                                                                                                                                                                                       
+    int N = 16384;                                                                                                                                                                                       
+    int K = 4096;                                                                                                                                                                                       
+                                                                                                                                                                                                        
+    std::cout << ">>> 分配超大内存 (M=" << M << ", N=" << N << ", K=" << K << ")...\n";                                                                                                                 
+    std::vector<float16_t> A(M * K, 1.0f);                                                                                                                                                              
+    std::vector<uint8_t> W(K * N / 2, 0x5c);                                                                                                                                                            
+    std::vector<float16_t> C(M * N, 0.0f);                                                                                                                                                              
+                                                                                                                                                                                                        
+    std::cout << ">>> 预热算子 (唤醒 Cache)...\n";                                                                                                                                                      
+    gemm_m4_w4a16_tiled(A.data(), W.data(), C.data(), M, N, K);                                                                                                                                         
+                                                                                                                                                                                                        
+    int num_runs = 5; // 跑 5 次求平均                                                                                                                                                                  
+    std::cout << ">>> 开始 Cache Tiling Benchmark (运行 " << num_runs << " 次)...\n";                                                                                                                   
+                                                                                                                                                                                                        
+    auto start_time = std::chrono::high_resolution_clock::now();                                                                                                                                        
+    for (int i = 0; i < num_runs; i++) {                                                                                                                                                                
+        gemm_m4_w4a16_tiled(A.data(), W.data(), C.data(), M, N, K);                                                                                                                                     
+    }                                                                                                                                                                                                   
+    auto end_time = std::chrono::high_resolution_clock::now();                                                                                                                                          
+                                                                                                                                                                                                        
+    std::chrono::duration<double> diff = end_time - start_time;                                                                                                                                         
+    double avg_time_sec = diff.count() / num_runs;                                                                                                                                                      
+                                                                                                                                                                                                        
+    double total_flops = 2.0 * M * N * K;                                                                                                                                                               
+    double gflops = (total_flops / avg_time_sec) / 1e9;                                                                                                                                                 
+                                                                                                                                                                                                        
+    std::cout << "--------------------------------------\n";                                                                                                                                            
+    std::cout << "[终极物理极速报告]\n";                                                                                                                                                                
+    std::cout << "单次平均耗时 : " << avg_time_sec * 1000.0 << " ms\n";                                                                                                                                 
+    std::cout << "绝对算力吞吐 : " << gflops << " GFLOPS\n";                                                                                                                                            
+    std::cout << "--------------------------------------\n";                                                                                                                                            
+                                                                                                                                                                                                        
+    return 0;                                                                                                                                                                                           
+}                                              
