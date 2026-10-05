@@ -1,0 +1,659 @@
+[
+  {
+    "test": "Tall-Skinny Single Token Decode (M=8, K=128, N=64)",
+    "category": "Aspect_Ratio_Sweep",
+    "metrics": {
+      "max_diff": 0.078125,
+      "mean_diff": 0.004738360643386841,
+      "rmse": 0.007875780574977398,
+      "cos_sim": 0.999998750382334,
+      "rel_frob": 0.00159142492339015,
+      "snr_db": 55.96427722110043,
+      "pass": true
+    },
+    "latency_ms": 2.41950002964586,
+    "gflops": 0.0541731756123123
+  },
+  {
+    "test": "Small Batch Decode (M=16, K=128, N=128)",
+    "category": "Aspect_Ratio_Sweep",
+    "metrics": {
+      "max_diff": 0.046875,
+      "mean_diff": 0.004595302045345306,
+      "rmse": 0.0073052155785262585,
+      "cos_sim": 0.9999985738997331,
+      "rel_frob": 0.0016276849200949073,
+      "snr_db": 55.768592679556974,
+      "pass": true
+    },
+    "latency_ms": 0.3447500057518482,
+    "gflops": 1.5207773495365324
+  },
+  {
+    "test": "Medium Batch Decode (M=32, K=128, N=128)",
+    "category": "Aspect_Ratio_Sweep",
+    "metrics": {
+      "max_diff": 0.0625,
+      "mean_diff": 0.005125313997268677,
+      "rmse": 0.00824420154094696,
+      "cos_sim": 0.9999981227823035,
+      "rel_frob": 0.0016560701187700033,
+      "snr_db": 55.61842279673574,
+      "pass": true
+    },
+    "latency_ms": 0.5472920020110905,
+    "gflops": 1.9159351792952957
+  },
+  {
+    "test": "Micro-Tile Baseline Probe (64x64x128)",
+    "category": "Aspect_Ratio_Sweep",
+    "metrics": {
+      "max_diff": 0.078125,
+      "mean_diff": 0.005098164081573486,
+      "rmse": 0.008469095453619957,
+      "cos_sim": 0.9999983181074243,
+      "rel_frob": 0.0017237021820619702,
+      "snr_db": 55.27075355813827,
+      "pass": true
+    },
+    "latency_ms": 0.44595799408853054,
+    "gflops": 2.3512887175464314
+  },
+  {
+    "test": "Spatial Unroll Block (2x N Span: 64x128x128)",
+    "category": "Aspect_Ratio_Sweep",
+    "metrics": {
+      "max_diff": 0.078125,
+      "mean_diff": 0.0051527549512684345,
+      "rmse": 0.008364824578166008,
+      "cos_sim": 0.999997191109349,
+      "rel_frob": 0.0016950848512351513,
+      "snr_db": 55.41616596511566,
+      "pass": true
+    },
+    "latency_ms": 0.912457995582372,
+    "gflops": 2.298354565528798
+  },
+  {
+    "test": "Reduction Contraction Block (2x M Span: 128x64x128)",
+    "category": "Aspect_Ratio_Sweep",
+    "metrics": {
+      "max_diff": 0.078125,
+      "mean_diff": 0.005254908464848995,
+      "rmse": 0.008544721640646458,
+      "cos_sim": 0.9999976876118821,
+      "rel_frob": 0.0016774625983089209,
+      "snr_db": 55.506939633608624,
+      "pass": true
+    },
+    "latency_ms": 0.8386250119656324,
+    "gflops": 2.500702900673732
+  },
+  {
+    "test": "Symmetric Square Tile (128x128x128)",
+    "category": "Aspect_Ratio_Sweep",
+    "metrics": {
+      "max_diff": 0.0703125,
+      "mean_diff": 0.004851448815315962,
+      "rmse": 0.007965655997395515,
+      "cos_sim": 0.9999972372666976,
+      "rel_frob": 0.001619702554307878,
+      "snr_db": 55.81128559076399,
+      "pass": true
+    },
+    "latency_ms": 1.7573750228621066,
+    "gflops": 2.3866869310393675
+  },
+  {
+    "test": "Double Reduction Depth Tile (64x64x256)",
+    "category": "Aspect_Ratio_Sweep",
+    "metrics": {
+      "max_diff": 0.171875,
+      "mean_diff": 0.010485254228115082,
+      "rmse": 0.01638060435652733,
+      "cos_sim": 0.9999965129620779,
+      "rel_frob": 0.0023342629428952932,
+      "snr_db": 52.63699967370652,
+      "pass": true
+    },
+    "latency_ms": 0.8468750165775418,
+    "gflops": 2.4763417965441654
+  },
+  {
+    "test": "Wide Matrix Contraction (64x256x128)",
+    "category": "Aspect_Ratio_Sweep",
+    "metrics": {
+      "max_diff": 0.09375,
+      "mean_diff": 0.004875854589045048,
+      "rmse": 0.00804844405502081,
+      "cos_sim": 0.9999968955172763,
+      "rel_frob": 0.0016822409816086292,
+      "snr_db": 55.482225985123854,
+      "pass": true
+    },
+    "latency_ms": 2.0282500190660357,
+    "gflops": 2.0679422953642494
+  },
+  {
+    "test": "Extended Square Tile (128x128x256)",
+    "category": "Aspect_Ratio_Sweep",
+    "metrics": {
+      "max_diff": 0.171875,
+      "mean_diff": 0.010263919830322266,
+      "rmse": 0.015807459130883217,
+      "cos_sim": 0.9999956681206323,
+      "rel_frob": 0.0023130534682422876,
+      "snr_db": 52.71627757460279,
+      "pass": true
+    },
+    "latency_ms": 3.333084052428603,
+    "gflops": 2.516770614856761
+  },
+  {
+    "test": "Odd Batch Dimension (M=24, N=64, K=128)",
+    "category": "Non_Power_of_2",
+    "metrics": {
+      "max_diff": 0.046875,
+      "mean_diff": 0.0043125152587890625,
+      "rmse": 0.007105202414095402,
+      "cos_sim": 0.999998569188681,
+      "rel_frob": 0.0016260597622022033,
+      "snr_db": 55.77726995002179,
+      "pass": true
+    },
+    "latency_ms": 0.2423750120215118,
+    "gflops": 1.6223454584711912
+  },
+  {
+    "test": "Non-Power-of-2 Channel (M=64, N=48, K=128)",
+    "category": "Non_Power_of_2",
+    "metrics": {
+      "max_diff": 0.0703125,
+      "mean_diff": 0.005482653621584177,
+      "rmse": 0.00887528620660305,
+      "cos_sim": 0.999998658709854,
+      "rel_frob": 0.001619662158191204,
+      "snr_db": 55.811509618788115,
+      "pass": true
+    },
+    "latency_ms": 0.35333301639184356,
+    "gflops": 2.2257529399059983
+  },
+  {
+    "test": "Unaligned Spatial Width (M=64, N=96, K=128)",
+    "category": "Non_Power_of_2",
+    "metrics": {
+      "max_diff": 0.078125,
+      "mean_diff": 0.005260458216071129,
+      "rmse": 0.008500910364091396,
+      "cos_sim": 0.9999976845874945,
+      "rel_frob": 0.001701338798739016,
+      "snr_db": 55.384180032931965,
+      "pass": true
+    },
+    "latency_ms": 0.660541991237551,
+    "gflops": 2.381171857148973
+  },
+  {
+    "test": "Asymmetric Extended Block (M=48, N=160, K=128)",
+    "category": "Non_Power_of_2",
+    "metrics": {
+      "max_diff": 0.125,
+      "mean_diff": 0.005235039163380861,
+      "rmse": 0.008764662779867649,
+      "cos_sim": 0.9999978769822104,
+      "rel_frob": 0.0016977490158751607,
+      "snr_db": 55.402527451986714,
+      "pass": true
+    },
+    "latency_ms": 0.8342079818248749,
+    "gflops": 2.3568223306843623
+  },
+  {
+    "test": "Triple Group Unaligned Depth (M=32, N=64, K=384)",
+    "category": "Non_Power_of_2",
+    "metrics": {
+      "max_diff": 0.171875,
+      "mean_diff": 0.016210734844207764,
+      "rmse": 0.024614201858639717,
+      "cos_sim": 0.999995658228563,
+      "rel_frob": 0.002796703716740012,
+      "snr_db": 51.06706751030217,
+      "pass": true
+    },
+    "latency_ms": 0.6893340032547712,
+    "gflops": 2.2817153840859996
+  },
+  {
+    "test": "Arbitrary Batch Scale (M=56, N=128, K=256)",
+    "category": "Non_Power_of_2",
+    "metrics": {
+      "max_diff": 0.140625,
+      "mean_diff": 0.010807880200445652,
+      "rmse": 0.01682041399180889,
+      "cos_sim": 0.9999959391241666,
+      "rel_frob": 0.002396527212113142,
+      "snr_db": 52.40834732132754,
+      "pass": true
+    },
+    "latency_ms": 1.486541994381696,
+    "gflops": 2.468827664385281
+  },
+  {
+    "test": "LLaMA-3 Attention Q/K/V Probe",
+    "category": "LLM_Projections",
+    "metrics": {
+      "max_diff": 0.078125,
+      "mean_diff": 0.004786226898431778,
+      "rmse": 0.007847653701901436,
+      "cos_sim": 0.9999980656614437,
+      "rel_frob": 0.0017208611825481057,
+      "snr_db": 55.28507930062994,
+      "pass": true
+    },
+    "latency_ms": 0.44654199155047536,
+    "gflops": 2.3482136503202145
+  },
+  {
+    "test": "LLaMA-3 Output Projection Tile",
+    "category": "LLM_Projections",
+    "metrics": {
+      "max_diff": 0.0859375,
+      "mean_diff": 0.005170875694602728,
+      "rmse": 0.008576255291700363,
+      "cos_sim": 0.9999972430585645,
+      "rel_frob": 0.001693987986072898,
+      "snr_db": 55.42178779127728,
+      "pass": true
+    },
+    "latency_ms": 0.8424169500358403,
+    "gflops": 2.4894465856969967
+  },
+  {
+    "test": "LLaMA-3 Feed-Forward SwiGLU Slice",
+    "category": "LLM_Projections",
+    "metrics": {
+      "max_diff": 0.078125,
+      "mean_diff": 0.004570258781313896,
+      "rmse": 0.007387928664684296,
+      "cos_sim": 0.9999979080448496,
+      "rel_frob": 0.0017120783450081944,
+      "snr_db": 55.32952399177244,
+      "pass": true
+    },
+    "latency_ms": 0.8540840353816748,
+    "gflops": 2.455439878422292
+  },
+  {
+    "test": "LLaMA-3 Dual-Group Contraction Layer",
+    "category": "LLM_Projections",
+    "metrics": {
+      "max_diff": 0.1875,
+      "mean_diff": 0.011349102482199669,
+      "rmse": 0.017262276262044907,
+      "cos_sim": 0.9999950739037567,
+      "rel_frob": 0.002323417691513896,
+      "snr_db": 52.677441552620714,
+      "pass": true
+    },
+    "latency_ms": 3.2953330082818866,
+    "gflops": 2.5456025169285192
+  },
+  {
+    "test": "Qwen-2.5-7B Non-Power-of-2 Attention Tile",
+    "category": "LLM_Projections",
+    "metrics": {
+      "max_diff": 0.078125,
+      "mean_diff": 0.004570258781313896,
+      "rmse": 0.007387928664684296,
+      "cos_sim": 0.9999979080448496,
+      "rel_frob": 0.0017120783450081944,
+      "snr_db": 55.32952399177244,
+      "pass": true
+    },
+    "latency_ms": 0.8795000030659139,
+    "gflops": 2.384482083785541
+  },
+  {
+    "test": "Qwen-2.5-7B Wide SwiGLU MLP Block",
+    "category": "LLM_Projections",
+    "metrics": {
+      "max_diff": 0.078125,
+      "mean_diff": 0.004572693258523941,
+      "rmse": 0.0074821398593485355,
+      "cos_sim": 0.9999969566012054,
+      "rel_frob": 0.0017507508164271712,
+      "snr_db": 55.13550656533829,
+      "pass": true
+    },
+    "latency_ms": 1.7031669849529862,
+    "gflops": 2.4626498969599147
+  },
+  {
+    "test": "Mistral-7B Sliding Window Attention Block",
+    "category": "LLM_Projections",
+    "metrics": {
+      "max_diff": 0.0859375,
+      "mean_diff": 0.005170875694602728,
+      "rmse": 0.008576255291700363,
+      "cos_sim": 0.9999972430585645,
+      "rel_frob": 0.001693987986072898,
+      "snr_db": 55.42178779127728,
+      "pass": true
+    },
+    "latency_ms": 0.8608329808339477,
+    "gflops": 2.436189187324521
+  },
+  {
+    "test": "DeepSeek-V2 MoE Routed Expert Block",
+    "category": "LLM_Projections",
+    "metrics": {
+      "max_diff": 0.09375,
+      "mean_diff": 0.009015551768243313,
+      "rmse": 0.014041838236153126,
+      "cos_sim": 0.9999969080915855,
+      "rel_frob": 0.0022682948037981987,
+      "snr_db": 52.88600668038079,
+      "pass": true
+    },
+    "latency_ms": 0.8564169984310865,
+    "gflops": 2.4487510218058244
+  },
+  {
+    "test": "1-Group Single (K=128, Group Count=1)",
+    "category": "Multi_Group_Traversal",
+    "metrics": {
+      "max_diff": 0.078125,
+      "mean_diff": 0.005537481978535652,
+      "rmse": 0.00890269409865141,
+      "cos_sim": 0.9999978062177403,
+      "rel_frob": 0.0016628701705485582,
+      "snr_db": 55.582828456884535,
+      "pass": true
+    }
+  },
+  {
+    "test": "2-Group Dual (K=256, Group Count=2)",
+    "category": "Multi_Group_Traversal",
+    "metrics": {
+      "max_diff": 0.125,
+      "mean_diff": 0.010118644684553146,
+      "rmse": 0.015822580084204674,
+      "cos_sim": 0.9999965553985232,
+      "rel_frob": 0.0023175051901489496,
+      "snr_db": 52.69958233581907,
+      "pass": true
+    }
+  },
+  {
+    "test": "3-Group Triple (K=384, Group Count=3)",
+    "category": "Multi_Group_Traversal",
+    "metrics": {
+      "max_diff": 0.28125,
+      "mean_diff": 0.016626913100481033,
+      "rmse": 0.02498193085193634,
+      "cos_sim": 0.9999951861521673,
+      "rel_frob": 0.002799897687509656,
+      "snr_db": 51.05715397138277,
+      "pass": true
+    }
+  },
+  {
+    "test": "4-Group Quad (K=512, Group Count=4)",
+    "category": "Multi_Group_Traversal",
+    "metrics": {
+      "max_diff": 0.3125,
+      "mean_diff": 0.02341681905090809,
+      "rmse": 0.035275716334581375,
+      "cos_sim": 0.9999939484461933,
+      "rel_frob": 0.003287344239652157,
+      "snr_db": 49.663093350935554,
+      "pass": true
+    }
+  },
+  {
+    "test": "6-Group Hexa (K=768, Group Count=6)",
+    "category": "Multi_Group_Traversal",
+    "metrics": {
+      "max_diff": 0.34375,
+      "mean_diff": 0.03553862124681473,
+      "rmse": 0.052641332149505615,
+      "cos_sim": 0.9999901969449828,
+      "rel_frob": 0.004280117806047201,
+      "snr_db": 47.37088262828806,
+      "pass": true
+    }
+  },
+  {
+    "test": "8-Group Octa Deep (K=1024, Group Count=8)",
+    "category": "Multi_Group_Traversal",
+    "metrics": {
+      "max_diff": 0.59375,
+      "mean_diff": 0.043387316167354584,
+      "rmse": 0.06334012001752853,
+      "cos_sim": 0.9999890272871608,
+      "rel_frob": 0.004515818785876036,
+      "snr_db": 46.905265968622274,
+      "pass": true
+    }
+  },
+  {
+    "test": "1. All-Zeros INT4 Weights (Q=0, Byte=0x00)",
+    "category": "Adversarial_Fuzzing",
+    "metrics": {
+      "max_diff": 0.078125,
+      "mean_diff": 0.002509084530174732,
+      "rmse": 0.004965081345289946,
+      "cos_sim": 0.9999988145010041,
+      "rel_frob": 0.0017320011975243688,
+      "snr_db": 55.22903184560822,
+      "pass": true
+    }
+  },
+  {
+    "test": "2. All-Max INT4 Weights (Q=15, Byte=0xFF)",
+    "category": "Adversarial_Fuzzing",
+    "metrics": {
+      "max_diff": 0.21875,
+      "mean_diff": 0.008096592500805855,
+      "rmse": 0.01334301196038723,
+      "cos_sim": 0.9999968409939803,
+      "rel_frob": 0.0017041179817169905,
+      "snr_db": 55.36999651219722,
+      "pass": true
+    }
+  },
+  {
+    "test": "3. Alternating Nibbles (0x0F, 0xF0 Checkerboard)",
+    "category": "Adversarial_Fuzzing",
+    "metrics": {
+      "max_diff": 0.15625,
+      "mean_diff": 0.006462928373366594,
+      "rmse": 0.010589002631604671,
+      "cos_sim": 0.9999964694642142,
+      "rel_frob": 0.0017143613658845425,
+      "snr_db": 55.31793947787107,
+      "pass": true
+    }
+  },
+  {
+    "test": "4. Interleaved Bits (0x55, 0xAA Pattern)",
+    "category": "Adversarial_Fuzzing",
+    "metrics": {
+      "max_diff": 0.109375,
+      "mean_diff": 0.0036066188476979733,
+      "rmse": 0.006153004243969917,
+      "cos_sim": 0.9999966969700047,
+      "rel_frob": 0.0016824208432808518,
+      "snr_db": 55.48129484264665,
+      "pass": true
+    }
+  },
+  {
+    "test": "5. Sparse LLM Outlier Activations (1% Outliers at 50x)",
+    "category": "Adversarial_Fuzzing",
+    "metrics": {
+      "max_diff": 0.75,
+      "mean_diff": 0.01982230693101883,
+      "rmse": 0.04240350425243378,
+      "cos_sim": 0.9999979327408571,
+      "rel_frob": 0.0014842579839751124,
+      "snr_db": 56.56980257592479,
+      "pass": true
+    }
+  },
+  {
+    "test": "6. High Dynamic Range Activations (Scale x100)",
+    "category": "Adversarial_Fuzzing",
+    "metrics": {
+      "max_diff": 8.0,
+      "mean_diff": 0.4610879421234131,
+      "rmse": 0.7556586861610413,
+      "cos_sim": 0.9999965659983163,
+      "rel_frob": 0.0016424941131845117,
+      "snr_db": 55.689914929563066,
+      "pass": true
+    }
+  },
+  {
+    "test": "7. Subnormal Underflow Probing (Scale=1e-7)",
+    "category": "Adversarial_Fuzzing",
+    "metrics": {
+      "max_diff": 3.0517578125e-05,
+      "mean_diff": 7.264316082000732e-08,
+      "rmse": 1.1470507388366968e-06,
+      "cos_sim": 0.9999977149875562,
+      "rel_frob": 1.170650648418814e-05,
+      "snr_db": 96.17622634759962,
+      "pass": true
+    }
+  },
+  {
+    "test": "8. Saturation Overflow Probing (Scale=50.0)",
+    "category": "Adversarial_Fuzzing",
+    "metrics": {
+      "max_diff": 48.0,
+      "mean_diff": 4.142780303955078,
+      "rmse": 6.036972999572754,
+      "cos_sim": 0.9999962446866366,
+      "rel_frob": 0.0016631026519462466,
+      "snr_db": 55.58160844827678,
+      "pass": true
+    }
+  },
+  {
+    "test": "9. Zero-Bias Degradation (Bias=0)",
+    "category": "Adversarial_Fuzzing",
+    "metrics": {
+      "max_diff": 0.0859375,
+      "mean_diff": 0.004653846845030785,
+      "rmse": 0.0076682656072080135,
+      "cos_sim": 0.9999964751370516,
+      "rel_frob": 0.0016667635645717382,
+      "snr_db": 55.56251057214216,
+      "pass": true
+    }
+  },
+  {
+    "test": "10. Extreme Asymmetric Zero-Points (Z=0 vs Z=15)",
+    "category": "Adversarial_Fuzzing",
+    "metrics": {
+      "max_diff": 0.15625,
+      "mean_diff": 0.006178046576678753,
+      "rmse": 0.0099163968116045,
+      "cos_sim": 0.9999971743832247,
+      "rel_frob": 0.0016350892838090658,
+      "snr_db": 55.72915992533979,
+      "pass": true
+    }
+  },
+  {
+    "test": "11. Heavy-Tailed Cauchy Distributed Activations",
+    "category": "Adversarial_Fuzzing",
+    "metrics": {
+      "max_diff": 0.75,
+      "mean_diff": 0.03517380729317665,
+      "rmse": 0.061225276440382004,
+      "cos_sim": 0.9999967016583117,
+      "rel_frob": 0.0016033344436436892,
+      "snr_db": 55.899506248159,
+      "pass": true
+    }
+  },
+  {
+    "test": "12. Ill-Conditioned Orthogonal Perturbation Matrix",
+    "category": "Adversarial_Fuzzing",
+    "metrics": {
+      "max_diff": 0.001708984375,
+      "mean_diff": 0.00010442576603963971,
+      "rmse": 0.000174553002580069,
+      "cos_sim": 0.999996717628072,
+      "rel_frob": 0.0011991476640105247,
+      "snr_db": 58.42239349792465,
+      "pass": true
+    }
+  },
+  {
+    "test": "Schedule S2 (L1 Single-Tier Fused)",
+    "category": "Multi_Schedule_Consistency",
+    "metrics": {
+      "max_diff": 0.0859375,
+      "mean_diff": 0.0053038038313388824,
+      "rmse": 0.008708146400749683,
+      "cos_sim": 0.9999981281375326,
+      "rel_frob": 0.0016452112467959523,
+      "snr_db": 55.67556440533616,
+      "pass": true
+    }
+  },
+  {
+    "test": "Schedule S3 (L2+L1 Hierarchical)",
+    "category": "Multi_Schedule_Consistency",
+    "metrics": {
+      "max_diff": 0.0859375,
+      "mean_diff": 0.0053038038313388824,
+      "rmse": 0.008708146400749683,
+      "cos_sim": 0.9999981281375326,
+      "rel_frob": 0.0016452112467959523,
+      "snr_db": 55.67556440533616,
+      "pass": true
+    }
+  },
+  {
+    "test": "Schedule S4 (M4 Specialized Tiling)",
+    "category": "Multi_Schedule_Consistency",
+    "metrics": {
+      "max_diff": 0.0859375,
+      "mean_diff": 0.0053038038313388824,
+      "rmse": 0.008708146400749683,
+      "cos_sim": 0.9999981281375326,
+      "rel_frob": 0.0016452112467959523,
+      "snr_db": 55.67556440533616,
+      "pass": true
+    }
+  },
+  {
+    "test": "Schedule S6 (Deep Transfer Hoisting & Unroll)",
+    "category": "Multi_Schedule_Consistency",
+    "metrics": {
+      "max_diff": 0.0859375,
+      "mean_diff": 0.0053038038313388824,
+      "rmse": 0.008708146400749683,
+      "cos_sim": 0.9999981281375326,
+      "rel_frob": 0.0016452112467959523,
+      "snr_db": 55.67556440533616,
+      "pass": true
+    }
+  },
+  {
+    "test": "1000_Stress_Loop",
+    "category": "Stress_Testing",
+    "elapsed_s": 0.43762124999193475,
+    "p50_us": 425.24997843429446,
+    "p90_us": 448.19607865065336,
+    "p99_us": 674.38188532833,
+    "p999_us": 893.8372514676457,
+    "std_us": 50.83412340790825,
+    "pass": true
+  }
+]
